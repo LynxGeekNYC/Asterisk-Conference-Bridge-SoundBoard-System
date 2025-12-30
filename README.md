@@ -1,62 +1,57 @@
 # Asterisk Conference Bridge SoundBoard System
 Asterisk Conference Bridge Sound Board system in C++ that injects audio into conference bridges through AMI
 
-Asterisk ConfBridge Soundboard
+---
 
-Asterisk ConfBridge Soundboard is a Linux-native, operator-grade soundboard utility for Asterisk ConfBridge conferences. It allows administrators and operators to inject audio into live conference bridges using the Asterisk Manager Interface (AMI), with automatic discovery of active rooms, a browsable sound library, favorites, recents, and batch playback.
+# Asterisk ConfBridge Soundboard
 
-The project is designed to be easy to install, safe to operate, and portable across Asterisk versions, with intelligent feature detection and optional fallback mechanisms.
+Asterisk ConfBridge Soundboard is a Linux-native, operator-grade soundboard utility for **Asterisk ConfBridge** conferences. It allows administrators and operators to **inject audio into live conference bridges** using the Asterisk Manager Interface (AMI), with automatic discovery of active rooms, a browsable sound library, favorites, recents, and batch playback.
 
-Key Features
-Conference Control
+The project is designed to be **easy to install**, **safe to operate**, and **portable across Asterisk versions**, with intelligent feature detection and optional fallback mechanisms.
 
-Enumerates active ConfBridge rooms in real time
+---
 
-Displays room metadata (participants, marked users, lock and mute state)
+## Key Features
 
-Lists participants per room with caller ID and channel information
+### Conference Control
 
-Sound Playback
+* Enumerates **active ConfBridge rooms** in real time
+* Displays **room metadata** (participants, marked users, lock and mute state)
+* Lists **participants per room** with caller ID and channel information
 
-Injects audio directly into a live ConfBridge
+### Sound Playback
 
-Supports WAV, ULAW, GSM, ALAW, SLN, SLN16
+* Injects audio directly into a live ConfBridge
+* Supports **WAV, ULAW, GSM, ALAW, SLN, SLN16**
+* Automatically resolves filesystem paths to Asterisk sound names
+* Works with multiple sound root directories
 
-Automatically resolves filesystem paths to Asterisk sound names
+### Sound Library Management
 
-Works with multiple sound root directories
+* Recursive indexing of sound directories
+* Fast text search
+* Favorites and recent sounds
+* Exact name selection for power users
+* Batch playback with configurable delays
 
-Sound Library Management
+### Intelligent Runtime Detection
 
-Recursive indexing of sound directories
+* Detects whether `ConfbridgePlaySound` is supported by the running Asterisk build
+* Warns clearly when unsupported instead of failing silently
+* Designed to support future fallback injection methods
 
-Fast text search
+### Installation & Operations
 
-Favorites and recent sounds
+* One-command installer script
+* Idempotent AMI configuration
+* Secure defaults for permissions and ownership
+* Clean separation between configuration, state, and binaries
 
-Exact name selection for power users
+---
 
-Batch playback with configurable delays
+## Architecture Overview
 
-Intelligent Runtime Detection
-
-Detects whether ConfbridgePlaySound is supported by the running Asterisk build
-
-Warns clearly when unsupported instead of failing silently
-
-Designed to support future fallback injection methods
-
-Installation & Operations
-
-One-command installer script
-
-Idempotent AMI configuration
-
-Secure defaults for permissions and ownership
-
-Clean separation between configuration, state, and binaries
-
-Architecture Overview
+```
 ┌─────────────────────────┐
 │  Operator / Admin       │
 │  (Terminal UI)          │
@@ -79,52 +74,58 @@ Architecture Overview
 │  ConfBridge Module      │
 │  (Live Conferences)    │
 └─────────────────────────┘
+```
 
-Requirements
+---
 
-Linux (x86_64)
+## Requirements
 
-Asterisk with ConfBridge enabled
+* Linux (x86_64)
+* Asterisk with ConfBridge enabled
+* AMI enabled and reachable (default TCP 5038)
+* C++17 compatible compiler (for building)
+* Root access for installation
 
-AMI enabled and reachable (default TCP 5038)
+---
 
-C++17 compatible compiler (for building)
+## Installation
 
-Root access for installation
+### Build
 
-Installation
-Build
+```bash
 g++ -O2 -std=c++17 -Wall -Wextra \
   -o asterisk-soundboard \
   asterisk_soundboard_adv.cpp
+```
 
-Install
+### Install
+
+```bash
 sudo ./install.sh
-
+```
 
 The installer will:
 
-Install the binary to /usr/local/bin/asterisk-soundboard
+* Install the binary to `/usr/local/bin/asterisk-soundboard`
+* Create `/etc/asterisk/asterisk-soundboard.conf`
+* Create sound and state directories
+* Add an AMI user block to `manager.conf`
+* Reload AMI
+* Validate basic ConfBridge functionality
 
-Create /etc/asterisk/asterisk-soundboard.conf
+---
 
-Create sound and state directories
-
-Add an AMI user block to manager.conf
-
-Reload AMI
-
-Validate basic ConfBridge functionality
-
-Configuration
+## Configuration
 
 Default configuration file:
 
+```
 /etc/asterisk/asterisk-soundboard.conf
-
+```
 
 Example:
 
+```ini
 host=127.0.0.1
 port=5038
 username=soundboard
@@ -133,96 +134,110 @@ secret=StrongSecretHere
 sound_roots=/var/lib/asterisk/sounds,/usr/share/asterisk/sounds
 extensions=wav,ulaw,gsm,alaw,sln,sln16
 favorites=custom/airhorn,custom/applause
+```
 
-Adding Sounds
+---
 
-Copy sound files into:
+## Adding Sounds
 
-/var/lib/asterisk/sounds/custom/soundboard/
+1. Copy sound files into:
 
+   ```
+   /var/lib/asterisk/sounds/custom/soundboard/
+   ```
 
-Ensure proper format (recommended):
+2. Ensure proper format (recommended):
 
-8 kHz
+   * 8 kHz
+   * Mono
 
-Mono
+3. Reference sounds by **Asterisk sound name**, not file path:
 
-Reference sounds by Asterisk sound name, not file path:
+   ```
+   custom/soundboard/airhorn
+   ```
 
-custom/soundboard/airhorn
+---
 
-Usage
+## Usage
+
+```bash
 asterisk-soundboard
-
+```
 
 Interactive features:
 
-Select active conference
+* Select active conference
+* Browse or search sounds
+* Play instantly
+* Batch play sequences
+* Quick-play favorites
+* Review recent sounds
 
-Browse or search sounds
+---
 
-Play instantly
+## Security Considerations
 
-Batch play sequences
+* Uses **least-privilege AMI credentials**
+* Configuration file is restricted to `root:asterisk`
+* No network listeners exposed by default
+* No modification of dialplan unless explicitly enabled
+* Designed to run interactively or via controlled automation
 
-Quick-play favorites
+---
 
-Review recent sounds
+## Operational Notes
 
-Security Considerations
+* Conference must be **active** to receive injected audio
+* Playback is non-blocking and does not join as a speaking participant
+* Sound names must resolve in Asterisk’s sound path
+* Feature availability depends on Asterisk build and modules
 
-Uses least-privilege AMI credentials
+---
 
-Configuration file is restricted to root:asterisk
-
-No network listeners exposed by default
-
-No modification of dialplan unless explicitly enabled
-
-Designed to run interactively or via controlled automation
-
-Operational Notes
-
-Conference must be active to receive injected audio
-
-Playback is non-blocking and does not join as a speaking participant
-
-Sound names must resolve in Asterisk’s sound path
-
-Feature availability depends on Asterisk build and modules
-
-Compatibility
+## Compatibility
 
 Tested against:
 
-Asterisk 16, 18, 20
-
-PJSIP-only systems
-
-Localhost and remote AMI connections
+* Asterisk 16, 18, 20
+* PJSIP-only systems
+* Localhost and remote AMI connections
 
 Designed to degrade gracefully on older builds.
 
-Roadmap
+---
 
-ncurses full-screen UI
+## Roadmap
 
-Web UI (local-only)
+* ncurses full-screen UI
+* Web UI (local-only)
+* Dialplan-based fallback injection
+* systemd service mode
+* RPM and DEB packaging
+* Multi-conference broadcast mode
+* Operator role separation
 
-Dialplan-based fallback injection
+---
 
-systemd service mode
-
-RPM and DEB packaging
-
-Multi-conference broadcast mode
-
-Operator role separation
-
-License
+## License
 
 MIT License
 
-Disclaimer
+---
+
+## Disclaimer
 
 This software is intended for administrative and operational use in environments where you are authorized to control conference audio. Always comply with applicable laws and organizational policies regarding call monitoring and audio injection.
+
+---
+
+If you want, I can also generate:
+
+* A full repository tree layout
+* A `README.md` file ready to commit
+* A `.gitignore`
+* A Debian packaging structure
+* A systemd service file
+* A dialplan fallback module
+
+
