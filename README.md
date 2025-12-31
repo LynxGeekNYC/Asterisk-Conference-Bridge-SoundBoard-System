@@ -231,13 +231,5 @@ This software is intended for administrative and operational use in environments
 
 ---
 
-If you want, I can also generate:
-
-* A full repository tree layout
-* A `README.md` file ready to commit
-* A `.gitignore`
-* A Debian packaging structure
-* A systemd service file
-* A dialplan fallback module
 
 
